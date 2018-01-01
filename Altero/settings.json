@@ -1,0 +1,14 @@
+﻿{
+  "locations": [
+    {
+      "os": "Win32NT",
+      "libs": [ "%os_drive%/Windows/System32", "%os_drive%/Windows/SysWOW64" ],
+      "apps": [ "%os_drive%/Apps" ]
+    },
+    {
+      "os": "Unix",
+      "libs": [ "NOPATH" ],
+      "apps": [ "NOPATH" ]
+    }
+  ]
+}

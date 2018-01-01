@@ -1,0 +1,20 @@
+﻿[
+  {
+    "lang": "ru-RU",
+    "entries": [
+      {
+        "key": "intro",
+        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\nFor features list use <darkcyan>alt help</>."
+      }
+    ]
+  },
+  {
+    "lang": "en-US",
+    "entries": [
+      {
+        "key": "intro",
+        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\nFor features list use <darkcyan>alt help</>."
+      }
+    ]
+  }
+]
