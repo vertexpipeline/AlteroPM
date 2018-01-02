@@ -1,19 +1,40 @@
 ﻿[
   {
-    "lang": "ru-RU",
-    "entries": [
+    "key": "intro",
+    "values": [
       {
-        "key": "intro",
-        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\nFor features list use <darkcyan>alt help</>."
+        "lang": "en-US",
+        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\n%help%"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\n%help%"
       }
     ]
   },
   {
-    "lang": "en-US",
-    "entries": [
+    "key": "mis_name",
+    "values": [
       {
-        "key": "intro",
-        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\nFor features list use <darkcyan>alt help</>."
+        "lang": "en-US",
+        "value": "Missing name parameter. Valid usage <cyan>alt create [name[~version]]</>\n%help%"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Missing name parameter. Valid usage <darkcyan>alt create [name[~version]]</>\n%help%"
+      }
+    ]
+  },
+  {
+    "key": "help",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "For features list use <darkcyan>alt help</>."
+      },
+      {
+        "lang": "ru-RU",
+        "value": "For features list use <darkcyan>alt help</>."
       }
     ]
   }

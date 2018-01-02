@@ -39,6 +39,7 @@ namespace Altero
                     Console.Write(mt.Value);
                 }
             }
+            Console.ResetColor();
         }
 
         public static void WriteLine(object text) => Write(text.ToString()+"\n");
