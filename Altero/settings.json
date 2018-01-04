@@ -1,4 +1,5 @@
 ﻿{
+  "path_regex": "([a-zA-Z]*:[\\[a-zA-Z0-9 .]*]*)",
   "locations": [
     {
       "os": "Win32NT",

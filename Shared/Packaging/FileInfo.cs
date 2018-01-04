@@ -4,9 +4,10 @@ using System.Text;
 
 namespace AlteroShared.Packaging
 {
-    public class FileInfo
+    public class FileMeta
     {
-        public string rootLocation;
+        public string type="file";
+        public string rootLocation="";
         public string destinationLocation;
     }
 }

@@ -4,11 +4,11 @@
     "values": [
       {
         "lang": "en-US",
-        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\n%help%"
+        "value": "Altero package manager.\nEnglish version\n<DarkYellow>Vertex Pipeline</> 2017.\n%help%"
       },
       {
         "lang": "ru-RU",
-        "value": "Altero package manager.\n<DarkYellow>Vertex Pipeline</> 2017.\n%help%"
+        "value": "Altero package manager.\nРусская локализация\n<DarkYellow>Vertex Pipeline</> 2017.\n%help%"
       }
     ]
   },
@@ -21,7 +21,7 @@
       },
       {
         "lang": "ru-RU",
-        "value": "Missing name parameter. Valid usage <darkcyan>alt create [name[~version]]</>\n%help%"
+        "value": "Пропущен параметр имени. Валидная запись команды <darkcyan>alt create [name[~version]]</>\n%help%"
       }
     ]
   },
@@ -34,8 +34,126 @@
       },
       {
         "lang": "ru-RU",
-        "value": "For features list use <darkcyan>alt help</>."
+        "value": "Для списка команд введите <darkcyan>alt help</>."
+      }
+    ]
+  },
+  {
+    "key": "dir_not_exists",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "Specified directory not exists"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Данной дериктории не существует"
+      }
+    ]
+  },
+  {
+    "key": "cannot_create",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "Cannot create package template"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Данной дериктории не существует"
+      }
+    ]
+  },
+  {
+    "key": "pkg_not_found",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "<red>Package folder not found or is not a package</>"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Указанная паппка либо не является пакетом. либо не найдена"
+      }
+    ]
+  },
+  {
+    "key": "dir_not_spec",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "<yellow>Write directory of a package</>"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Укажите директорию с пакетом"
+      }
+    ]
+  },
+  {
+    "key": "meta_not_exists",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "Metafile not found in a package dir"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Метафайл не найден в папке с пакетом"
+      }
+    ]
+  },
+  {
+    "key": "package_not_found",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "<red>Package not found</>"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Пакет не найден"
+      }
+    ]
+  },
+  {
+    "key": "adding",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "Adding"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Добавляю"
+      }
+    ]
+  },
+  {
+    "key": "assembling",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "<cyan>Assembling package...</>"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Сборка пакеты..."
+      }
+    ]
+  },
+  {
+    "key": "fetching_root",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "<cyan>Scaning root folder</>"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Сборка файлов с рутовой директории пакеты"
       }
     ]
   }
+
 ]

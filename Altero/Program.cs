@@ -1,29 +1,37 @@
 ﻿using System;
 using System.IO;
-using static Altero.RichConsole;
 using Newtonsoft.Json;
 using System.Linq;
 using Altero.Models;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.IO.Compression;
 
 using AlteroShared.Packaging;
 using AlteroShared;
-using System.Text.RegularExpressions;
+using Altero.Repositories;
+using AlteroShared.Packaging;
 
+using System.Reflection;
+
+using static Altero.RichConsole;
 
 namespace Altero
 {
     class Program
     {
         static LocationsInfo _locations;
+        static SettingsModel _settings;
         static Dictionary<string, string> _i10n;
+        static string _path = new System.IO.FileInfo(new Uri(Assembly.GetExecutingAssembly().CodeBase).AbsolutePath).Directory.FullName;
 
         static void LoadSettings()
         {
-            var settingsFile = File.ReadAllText("settings.json");
+            var settingsFile = File.ReadAllText(_path+"\\settings.json");
             var settings = JsonConvert.DeserializeObject<Altero.Models.SettingsModel>(settingsFile);
 
             _locations = settings.locations.First(e => e.os == Environment.OSVersion.Platform.ToString());
+            _settings = settings;
         }
 
         static List<Argument> ParseArgs(IEnumerable<string> args)
@@ -39,8 +47,8 @@ namespace Altero
                     key = trimmedArg.Substring(1);
                 } else {
                     if (key == "") {
-                        if (key.Count(c => c == '.' || c == '\\') != 0)
-                            arguments.Add(new Argument { key = "FILE", parameter = trimmedArg });
+                        if (Regex.IsMatch(arg, _settings.path_regex))
+                            arguments.Add(new Argument { key = "PATH", parameter = trimmedArg });
                         else {
                             arguments.Add(new Argument { key = n.ToString(), parameter = trimmedArg });
                             n++;
@@ -60,7 +68,7 @@ namespace Altero
         {
             _i10n = new Dictionary<string, string>();
 
-            dynamic file = JsonConvert.DeserializeObject(File.ReadAllText("i10n.json"));
+            dynamic file = JsonConvert.DeserializeObject(File.ReadAllText(_path+"\\i10n.json"));
             var cult = System.Globalization.CultureInfo.CurrentCulture.Name;
 
             foreach (dynamic entry in file) {
@@ -82,12 +90,14 @@ namespace Altero
             var temp = new Dictionary<string, string>();
 
             foreach(KeyValuePair<string, string> entry in _i10n) {
+                var formed = entry.Value;
                 foreach(Match mt in Regex.Matches(entry.Value, @"%(?<name>\w+)%")) {
                     var name = mt.Groups["name"].Value;
                     if (_i10n.ContainsKey(name)) {
-                        temp.Add(entry.Key,entry.Value.Replace(mt.Value, _i10n[name]));
-                    }
+                        formed = formed.Replace(mt.Value, _i10n[name]);
+                    } 
                 }
+                temp.Add(entry.Key, formed);
             }
 
             _i10n = temp;
@@ -95,11 +105,38 @@ namespace Altero
 
         static void Create(string path, string name, PackageVersion ver)
         {
+            if (Directory.Exists(path)) {
+                try {
+                    var dir = $"{path}\\{name}~{ver}";
+                    
+                    Directory.CreateDirectory(dir);
+                    var meta = JsonConvert.SerializeObject(new PackageMeta { name = name, version = ver}, Formatting.Indented);
+                    File.WriteAllText(dir+"\\metadata.json", meta);
+                }catch(InvalidOperationException ex) {
+                    Write(_i10n["cannot_create"]);
+                }
+            } else {
+                Write(_i10n["dir_not_exists"]);
+            }
+        }
 
+        static PackageInfo AssemblyPackage(PackageMeta meta, string path, string root="\\root")
+        {
+            var pkg = new PackageInfo();
+            pkg.meta = meta;
+
+            var pkgName = meta.name + meta.version.ToString();
+            var file = Path.GetTempPath() + "\\" + Path.GetRandomFileName();
+
+            ZipFile.CreateFromDirectory(path, file);
+
+            pkg.packagePath = file;
+            return pkg;
+            
         }
 
         static void Main(string[] args)
-        {
+        { 
             LoadSettings();
             LoadI10n();
             
@@ -110,10 +147,97 @@ namespace Altero
                 var arguments = ParseArgs(args.Skip(1));
 
                 switch (command) {
-                    case "create":
-                        if (arguments.Count < 1)
-                            Write(_i10n["mis_name"]);
-                        break;
+                    case "create": {
+                            if (arguments.Count(arg => arg.key == "0") < 1)
+                                Write(_i10n["mis_name"]);
+                            else {
+                                var path = "";
+                                arguments.ForEach((arg) =>
+                                {
+                                    if (arg.key == "PATH")
+                                        path = arg.parameter;
+                                });
+
+                                var nameSplit = arguments.First(arg => arg.key == "0").parameter.Split('~');
+                                //read version
+                                var parts = new int[] { 0, 0, 0, 0 };
+                                try {
+                                    nameSplit[1].Split('.').ForEach((part, i) =>
+                                    {
+                                        parts[i] = int.Parse(part);
+                                    });
+                                }
+                                catch (Exception ex) {
+
+                                }
+                                var version = new PackageVersion(parts[0], parts[1], parts[2], parts[3]);
+
+                                Create(path, nameSplit[0], version);
+                            }
+                            break;
+                        }
+                    case "make": {
+                            IPackagesRepository repo = OnlineRepository.Load();
+                            foreach(var arg in arguments) {
+                                if (arg.key == "r") {
+                                    var localRepo = LocalRepository.Load(arg.parameter);
+                                    if (localRepo != null)
+                                        repo = localRepo;                        
+                                }
+                            }
+                            
+                            var pathArg = arguments.FirstOrDefault(a => a.key == "PATH");
+                            var fileArg = arguments.FirstOrDefault(a => a.key == "0");
+
+                            if (pathArg != default(Argument)) {
+                                var pkg = default(PackageInfo);
+                                try {
+                                    var path = pathArg.parameter;
+                                    var metaFile = File.ReadAllText(path + "\\metadata.json");
+                                    var meta = JsonConvert.DeserializeObject<PackageMeta>(metaFile);
+
+                                    if(fileArg != default(Argument)) {
+                                        //TODO add logging support
+                                    } else {
+                                        if (Directory.Exists(path + "\\root")) {
+                                            var root = path + "\\root";
+                                            void addFolder(string relPath)
+                                            {
+                                                meta.files.Add(new FileMeta { type = "folder", destinationLocation = "%root%" + relPath });
+                                                var dInfo = new DirectoryInfo(root + "\\" + relPath);
+                                                foreach(var file in dInfo.GetFiles()) {
+                                                    meta.files.Add(new FileMeta() { rootLocation = relPath, destinationLocation = "%root%" + relPath });
+                                                    Write($"{_i10n["adding"]} {file.FullName}\n");
+                                                }
+                                                foreach(var folder in dInfo.GetDirectories()) {
+                                                    addFolder(relPath+"\\"+folder.Name);
+                                                }
+                                            }
+                                            WriteLine(_i10n["fetching_root"]);
+                                            addFolder("");
+                                        }
+                                    }
+                                    WriteLine(_i10n["assembling"]);
+                                    pkg = AssemblyPackage(meta, pathArg.parameter);
+                                    Write(JsonConvert.SerializeObject(pkg.meta, Formatting.Indented));
+
+                                }
+                                catch (FileNotFoundException ex) {
+                                    Write(_i10n["meta_not_exists"]);
+                                }
+                                catch (Exception ex) {
+                                    Write(_i10n["package_not_found"]);
+                                }
+
+                                if (pkg != default(PackageInfo)) {
+                                    Write(pkg.packagePath);
+                                }
+                                
+                            } else {
+                                Write(_i10n["dir_not_spec"]);
+                            }
+                            break;
+                        }
                 }
             }
         }

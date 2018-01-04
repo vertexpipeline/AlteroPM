@@ -7,5 +7,6 @@ namespace Altero.Models
     class SettingsModel
     {
         public List<LocationsInfo> locations;
+        public string path_regex;
     }
 }

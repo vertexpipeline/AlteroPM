@@ -6,9 +6,11 @@ namespace AlteroShared.Packaging
 {
     public class PackageMeta
     {
-        public string type; // lib/app/driver
-        public List<RegistryInfo> registry;
-        public List<FileInfo> files;
-        public List<LauncherInfo> launchers;
+        public string name;
+        public PackageVersion version = new PackageVersion();
+        public string type="app"; // lib/app/driver
+        public List<RegistryInfo> registry = new List<RegistryInfo>();
+        public List<FileMeta> files = new List<FileMeta>();
+        public List<LauncherInfo> launchers = new List<LauncherInfo>();
     }
 }
