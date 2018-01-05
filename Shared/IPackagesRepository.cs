@@ -6,6 +6,8 @@ namespace AlteroShared
 {
     interface IPackagesRepository
     {
+        PackageInfo Get(string name, PackageVersion version);
+        void Send(PackageInfo pkg);
 
     }
 }

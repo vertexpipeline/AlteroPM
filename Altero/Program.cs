@@ -132,7 +132,39 @@ namespace Altero
 
             pkg.packagePath = file;
             return pkg;
+        }
+
+        static IPackagesRepository LoadRepo(List<Argument> args)
+        {
+            IPackagesRepository repo = OnlineRepository.Load();
+            foreach (var arg in args) {
+                if (arg.key == "r") {
+                    var localRepo = LocalRepository.Load(arg.parameter);
+                    if (localRepo != null)
+                        repo = localRepo;
+                }
+            }
+            return repo;
+        }
+        static (string, PackageVersion) ParseCompositeName(List<Argument> args, int pos)
+        {
+            var parts = new int[] { 0, 0, 0, 0 };
+            var name = "";
+            try {
+                var nameSplit = args.First(arg => arg.key == pos.ToString()).parameter.Split('~');
+            //read version
             
+                nameSplit[1].Split('.').ForEach((part, i) =>
+                {
+                    parts[i] = int.Parse(part);
+                });
+                name = nameSplit[0];
+            }
+            catch (Exception ex) {
+                return (null, null);
+            }
+            var version = new PackageVersion(parts[0], parts[1], parts[2], parts[3]);
+            return (name, version);
         }
 
         static void Main(string[] args)
@@ -158,33 +190,14 @@ namespace Altero
                                         path = arg.parameter;
                                 });
 
-                                var nameSplit = arguments.First(arg => arg.key == "0").parameter.Split('~');
-                                //read version
-                                var parts = new int[] { 0, 0, 0, 0 };
-                                try {
-                                    nameSplit[1].Split('.').ForEach((part, i) =>
-                                    {
-                                        parts[i] = int.Parse(part);
-                                    });
-                                }
-                                catch (Exception ex) {
+                                var (name, version) = ParseCompositeName(arguments, 0);
 
-                                }
-                                var version = new PackageVersion(parts[0], parts[1], parts[2], parts[3]);
-
-                                Create(path, nameSplit[0], version);
+                                Create(path, name, version);
                             }
                             break;
                         }
                     case "make": {
-                            IPackagesRepository repo = OnlineRepository.Load();
-                            foreach(var arg in arguments) {
-                                if (arg.key == "r") {
-                                    var localRepo = LocalRepository.Load(arg.parameter);
-                                    if (localRepo != null)
-                                        repo = localRepo;                        
-                                }
-                            }
+                            var repo = LoadRepo(arguments);
                             
                             var pathArg = arguments.FirstOrDefault(a => a.key == "PATH");
                             var fileArg = arguments.FirstOrDefault(a => a.key == "0");
@@ -206,7 +219,7 @@ namespace Altero
                                                 meta.files.Add(new FileMeta { type = "folder", destinationLocation = "%root%" + relPath });
                                                 var dInfo = new DirectoryInfo(root + "\\" + relPath);
                                                 foreach(var file in dInfo.GetFiles()) {
-                                                    meta.files.Add(new FileMeta() { rootLocation = relPath, destinationLocation = "%root%" + relPath });
+                                                    meta.files.Add(new FileMeta() { rootLocation = "root\\"+relPath, destinationLocation = "%root%" + relPath });
                                                     Write($"{_i10n["adding"]} {file.FullName}\n");
                                                 }
                                                 foreach(var folder in dInfo.GetDirectories()) {
@@ -219,23 +232,41 @@ namespace Altero
                                     }
                                     WriteLine(_i10n["assembling"]);
                                     pkg = AssemblyPackage(meta, pathArg.parameter);
-                                    Write(JsonConvert.SerializeObject(pkg.meta, Formatting.Indented));
-
                                 }
                                 catch (FileNotFoundException ex) {
                                     Write(_i10n["meta_not_exists"]);
                                 }
                                 catch (Exception ex) {
+                                    Write(ex);
                                     Write(_i10n["package_not_found"]);
                                 }
 
                                 if (pkg != default(PackageInfo)) {
-                                    Write(pkg.packagePath);
+                                    repo.Send(pkg);
                                 }
                                 
                             } else {
                                 Write(_i10n["dir_not_spec"]);
                             }
+                            break;
+                        }
+                    case "makerepo": {
+                            var path = arguments.FirstOrDefault(a => a.key == "PATH");
+                            if(path != default(Argument)) {
+                                Directory.CreateDirectory(path.parameter);
+                                File.WriteAllText(path.parameter + "\\meta.json", JsonConvert.SerializeObject(new LocalRepositoryInfo(), Formatting.Indented));
+                                WriteLine("<green>Local repository was created</>");
+                            } else {
+                                WriteLine("<red>Write path</>");
+                            }
+                            break;
+                        }
+                    case "install": {
+                            var repo = LoadRepo(arguments);
+
+                            var n = 0;
+                            
+
                             break;
                         }
                 }

@@ -154,6 +154,19 @@
         "value": "Сборка файлов с рутовой директории пакеты"
       }
     ]
+  },
+  {
+    "key": "conin_local",
+    "values": [
+      {
+        "lang": "en-US",
+        "value": "<cyan>Scaning root folder</>"
+      },
+      {
+        "lang": "ru-RU",
+        "value": "Сборка файлов с рутовой директории пакеты"
+      }
+    ]
   }
 
 ]

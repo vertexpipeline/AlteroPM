@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AlteroShared;
 
 namespace Altero.Repositories
 {
@@ -11,6 +12,17 @@ namespace Altero.Repositories
         public static OnlineRepository Load()
         {
             return new OnlineRepository();
+        }
+
+        public PackageInfo Get(string name, PackageVersion version)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Send(PackageInfo pkg)
+        {
+        
+            throw new NotImplementedException();
         }
 
         private OnlineRepository()
