@@ -7,7 +7,8 @@ namespace AlteroShared.Packaging
     public class FileMeta
     {
         public string type="file";
+        public string name="";
         public string rootLocation="";
-        public string destinationLocation;
+        public string destinationLocation="";
     }
 }

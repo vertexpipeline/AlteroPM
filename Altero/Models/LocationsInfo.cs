@@ -8,6 +8,6 @@ namespace Altero.Models
     {
         public string os;
         public List<string> libs;
-        public List<string> apps;
+        public string apps;
     }
 }

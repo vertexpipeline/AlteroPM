@@ -8,6 +8,6 @@ namespace AlteroShared
     {
         PackageInfo Get(string name, PackageVersion version);
         void Send(PackageInfo pkg);
-
+        void Delete(string name, PackageVersion version);
     }
 }

@@ -6,8 +6,9 @@ namespace AlteroShared.Packaging
 {
     public class LauncherInfo
     {
-        public string name;
-        public string icon;
-        public string isShortcut;
+        public string name="";
+        public string icon="";
+        public bool isShortcut=false;
+        public string file="";
     }
 }

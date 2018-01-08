@@ -4,9 +4,14 @@ using System.Text;
 
 namespace AlteroShared
 {
-    class PackageInfo
+    class PackageInfo:IComparable<PackageInfo>
     {
         public Packaging.PackageMeta meta;
         public string packagePath;
+
+        public int CompareTo(PackageInfo other)
+        {
+            return meta.CompareTo(other.meta);
+        }
     }
 }

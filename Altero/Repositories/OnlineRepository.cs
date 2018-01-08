@@ -25,6 +25,11 @@ namespace Altero.Repositories
             throw new NotImplementedException();
         }
 
+        public void Delete(string name, PackageVersion version)
+        {
+            throw new NotImplementedException();
+        }
+
         private OnlineRepository()
         {
             

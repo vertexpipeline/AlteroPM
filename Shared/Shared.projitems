@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IPackagesRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PackageInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PackageVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Packaging\DependencyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\FileInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\LauncherInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\PackageMeta.cs" />

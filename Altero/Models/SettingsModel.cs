@@ -8,5 +8,6 @@ namespace Altero.Models
     {
         public List<LocationsInfo> locations;
         public string path_regex;
+        public List<AlteroShared.Packaging.PackageMeta> installed = new List<AlteroShared.Packaging.PackageMeta>();
     }
 }
