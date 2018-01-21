@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Altero
+namespace Altero.Tools
 {
     public static class IEumerableExtension
     {

@@ -8,5 +8,8 @@ namespace Altero.Models
     {
         public string key;
         public string parameter = null;
+
+        public bool IsPath { get; set; } = false;
+        public bool IsParameter { get; set; } = false;
     }
 }

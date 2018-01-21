@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using AlteroShared;
+using AlteroShared.Packaging;
 
 namespace Altero.Repositories
 {
@@ -26,6 +27,11 @@ namespace Altero.Repositories
         }
 
         public void Delete(string name, PackageVersion version)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<PackageMeta> Search(string pattern)
         {
             throw new NotImplementedException();
         }

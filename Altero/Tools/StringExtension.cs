@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Altero
+namespace Altero.Tools
 {
-    public static class StringExtensions
+    public static class StringExtension
     {
         public static string Fill(this string str, Dictionary<string, string> values)
         {

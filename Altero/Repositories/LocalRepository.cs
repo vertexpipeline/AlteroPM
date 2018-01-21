@@ -7,6 +7,9 @@ using System.IO;
 using System.Linq;
 
 using static Altero.RichConsole;
+using AlteroShared.Packaging;
+
+using System.Text.RegularExpressions;
 
 namespace Altero.Repositories
 {
@@ -18,14 +21,14 @@ namespace Altero.Repositories
 
         public static LocalRepository Load(string path)
         {
-            WriteLine("<cyan>Connecting to local repo...</>");
+            WriteLocalLine("connecting_local");
             try {
                 var meta = JsonConvert.DeserializeObject<LocalRepositoryInfo>(File.ReadAllText(path + "\\meta.json"));
-                WriteLine("<green>Connected</>");
+                WriteLocalLine("success");
                 return new LocalRepository(path, meta);
             }
             catch (Exception ex) {
-                WriteLine("<red>Missing or invalid repository, connecting to online repo</>");
+                WriteLocalLine("mis_repo");
                 return null;
             }
         }
@@ -52,7 +55,7 @@ namespace Altero.Repositories
             File.Move(pkg.packagePath, newPath);
             pkg.packagePath = newPath;
 
-            WriteLine("<green>Package was sent</>");
+            WriteLocalLine("pkg_sent");
 
             _meta.packages.Add(pkg);
 
@@ -71,9 +74,9 @@ namespace Altero.Repositories
                 }
 
                 if (deletionPending.Count == 0)
-                    WriteLine($"<red>Not found item {name}</>");
+                    WriteLocalLine($"item_n_found", name);
                 else
-                    WriteLine($"<green>Deleted {deletionPending.Count} versions of {name}</>");
+                    WriteLocalLine($"deleted_vers", deletionPending.Count, name);
 
                 foreach (var pended in deletionPending)
                     _meta.packages.Remove(pended);
@@ -84,11 +87,20 @@ namespace Altero.Repositories
                     if (File.Exists(pkg.packagePath))
                         File.Delete(pkg.packagePath);
                     _meta.packages.Remove(pkg);
-                    WriteLine($"<green>{name} deleted</>");
+                    WriteLocalLine($"deleted", name);
 
                 }
             }
             File.WriteAllText(_path + "\\meta.json", JsonConvert.SerializeObject(_meta));
+        }
+
+        public List<PackageMeta> Search(string searchPattern)
+        {
+            try {
+                return _meta.packages.Where(pkg => Regex.IsMatch(pkg.meta.name, searchPattern)).Select(pkg => pkg.meta).ToList();
+            }catch(Exception ex) {
+                return new List<PackageMeta>();
+            }
         }
 
         private LocalRepository(string path, LocalRepositoryInfo meta)

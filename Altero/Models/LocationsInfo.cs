@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Altero.Models
 {
-    class LocationsInfo
+    public class LocationsInfo
     {
         public string os;
         public List<string> libs;
