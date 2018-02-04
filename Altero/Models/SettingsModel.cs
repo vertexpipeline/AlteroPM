@@ -12,6 +12,6 @@ namespace Altero.Models
         public string path_regex;
         public string localization_path;
         public List<AlteroShared.Packaging.PackageMeta> installed = new List<AlteroShared.Packaging.PackageMeta>();
-        public string serverURL;
+        
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AlteroShared
 {
-    public class PackageInfo:IComparable<PackageInfo>
+    class PackageInfo:IComparable<PackageInfo>
     {
         public Packaging.PackageMeta meta;
         public string packagePath;
