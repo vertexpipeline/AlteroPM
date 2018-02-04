@@ -18,7 +18,7 @@ namespace AlteroSite.Controllers
     [Route("api")]
     public class APIController : Controller
     {
-        public static IPackagesRepository repository = LocalRepository.Load("wwwroot/repository");
+        public static IPackagesRepository repository = LocalRepository.Load("c:/repository");
         public List<string> keys = System.IO.File.ReadAllLines("keys.txt").ToList();
 
         public async Task<bool> ValidateKey()
