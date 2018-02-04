@@ -9,13 +9,18 @@
     <Import_RootNamespace>AlteroShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IEumerableExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPackagesRepository.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PackageInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PackageVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\DependencyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\FileInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Packaging\InstallationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\LauncherInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\PackageMeta.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Packaging\RegistryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Repositories\LocalRepository.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Repositories\LocalRepositoryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Repositories\OnlineRepository.cs" />
   </ItemGroup>
 </Project>

@@ -7,15 +7,14 @@ using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Reflection;
 using System.Security.Permissions;
-
+using System.Text;
 using Altero;
 using Altero.Tools;
 using Altero.Models;
 using AlteroShared.Packaging;
 using AlteroShared;
 using Altero.Repositories;
-using AlteroShared.Packaging;
-
+using System.Net;
 using static Altero.Tools.RichConsole;
 
 namespace Altero
@@ -30,7 +29,10 @@ namespace Altero
 
                     Directory.CreateDirectory(dir);
                     var meta = JsonConvert.SerializeObject(new PackageMeta { name = name, version = ver }, Formatting.Indented);
+                    var instMeta = JsonConvert.SerializeObject(new InstallationInfo { owner = name}, Formatting.Indented);
                     File.WriteAllText(dir + "\\metadata.json", meta);
+                    Console.WriteLine(instMeta);
+                    File.WriteAllText(dir + "\\installation.json", instMeta);
                 }
                 catch (InvalidOperationException ex) {
                     WriteLocal("cannot_create");
@@ -41,7 +43,7 @@ namespace Altero
             }
         }
 
-        static PackageInfo AssemblyPackage(PackageMeta meta, string path, string root = "\\root")
+        static PackageInfo AssemblyPackage(PackageMeta meta, InstallationInfo instMeta, string path, string root = "\\root")
         {
             var pkg = new PackageInfo();
             pkg.meta = meta;
@@ -53,8 +55,10 @@ namespace Altero
             if (File.Exists(file))
                 File.Delete(file);
 
-            ZipFile.CreateFromDirectory(path, file);
+            File.WriteAllText(path + "\\installation.json", JsonConvert.SerializeObject(instMeta, Formatting.Indented));
 
+            ZipFile.CreateFromDirectory(path, file);
+            Console.WriteLine("Packed "+file);
             pkg.packagePath = file;
             return pkg;
         }
@@ -119,7 +123,10 @@ namespace Altero
             Directory.CreateDirectory(tempPath);
             WriteLocalLine("extracting");
             ZipFile.ExtractToDirectory(info.packagePath, tempPath);
+
             WriteLocalLine("distributing");
+
+            var instMeta = JsonConvert.DeserializeObject<InstallationInfo>(System.IO.File.ReadAllText(tempPath + "\\installation.json"));
 
             var filler = MakeFiller(info.meta, repo);
             if (info.meta.type == "app") {
@@ -127,14 +134,14 @@ namespace Altero
                 Directory.CreateDirectory(appDir);
 
                 try {
-                    foreach (var entry in info.meta.files.Where(pkg => pkg.type == "folder")) {
+                    foreach (var entry in instMeta.files.Where(pkg => pkg.type == "folder")) {
                         if (entry.destinationLocation != "%root%\\") {
                             var filledPath = entry.destinationLocation.Fill(filler);
                             Directory.CreateDirectory(filledPath);
                         }
                     }
 
-                    foreach (var entry in info.meta.files.Where(pkg => pkg.type == "file")) {
+                    foreach (var entry in instMeta.files.Where(pkg => pkg.type == "file")) {
                         File.Move(tempPath + "\\" + entry.rootLocation + "\\" + entry.name, entry.destinationLocation.Fill(filler) + "\\" + entry.name);
                     }
                 }
@@ -142,10 +149,11 @@ namespace Altero
                     return false;
                 }
                 finally {
+                    File.Move(tempPath + "\\installation.json", appDir+"\\installation.json");
                     Directory.Delete(tempPath, true);
                 }
 
-                foreach (var launcher in info.meta.launchers) {
+                foreach (var launcher in instMeta.launchers) {
                     if (launcher.isShortcut) {
                         if (File.Exists(appDir + "\\" + launcher.icon) && File.Exists(appDir + "\\" + launcher.file)) {
                             File.WriteAllText("%user%\\desktop\\".Fill(filler) + launcher.name + ".url", $"[InternetShortcut]\n" +
@@ -172,7 +180,7 @@ namespace Altero
             }
             else {//installing libs
                 try {
-                    foreach (var entry in info.meta.files.Where(pkg => pkg.type == "file")) {
+                    foreach (var entry in instMeta.files.Where(pkg => pkg.type == "file")) {
                         var dest = entry.destinationLocation.Fill(filler) + "\\" + entry.name;
                         var source = tempPath + "\\" + entry.rootLocation + "\\" + entry.name;
                         if (!File.Exists(dest) && File.Exists(source))
@@ -198,10 +206,12 @@ namespace Altero
                     var filler = MakeFiller(installedPackage, null);
 
                     var appDir = "%root%".Fill(filler);
+                    var instMeta = JsonConvert.DeserializeObject<InstallationInfo>(System.IO.File.ReadAllText(appDir + "\\installation.json"));
+
                     //Directory.CreateDirectory(appDir); maybe valuable
                     if (installedPackage.type == "app") {
                         try {
-                            foreach (var entry in installedPackage.files.Where(pkg => pkg.type == "folder")) {
+                            foreach (var entry in instMeta.files.Where(pkg => pkg.type == "folder")) {
                                 if (entry.destinationLocation != "%root%\\") {
                                     var filledPath = entry.destinationLocation.Fill(filler);
                                     if (Directory.Exists(filledPath))
@@ -209,7 +219,7 @@ namespace Altero
                                 }
                             }
 
-                            foreach (var entry in installedPackage.files.Where(pkg => pkg.type == "file")) {
+                            foreach (var entry in instMeta.files.Where(pkg => pkg.type == "file")) {
                                 var file = entry.destinationLocation.Fill(filler) + "\\" + entry.name;
                                 if (File.Exists(file))
                                     File.Delete(file);
@@ -220,7 +230,7 @@ namespace Altero
                             return false;
                         }
 
-                        foreach (var launcher in installedPackage.launchers) {
+                        foreach (var launcher in instMeta.launchers) {
                             if (launcher.isShortcut) {
                                 var shortcut = $"%user%\\desktop\\{launcher.name}.url".Fill(filler);
                                 if (File.Exists(shortcut))
@@ -236,7 +246,7 @@ namespace Altero
                         Directory.Delete(appDir, true);
                     }
                     else {
-                        foreach (var entry in installedPackage.files.Where(pkg => pkg.type == "file")) {
+                        foreach (var entry in instMeta.files.Where(pkg => pkg.type == "file")) {
                             var file = entry.destinationLocation.Fill(filler) + "\\" + entry.name;
                             if(File.Exists(file))
                                 File.Delete(entry.destinationLocation.Fill(filler) + "\\" + entry.name);
@@ -250,37 +260,39 @@ namespace Altero
             return false;
         }
 
-        static IPackagesRepository LoadRepo(List<Argument> args)
+        static IPackagesRepository LoadRepo(ArgumentsList args, Guid key)
         {
-            IPackagesRepository repo = LocalRepository.Load("c:/BS");
-            foreach (var arg in args) {
+            IPackagesRepository repo = OnlineRepository.Load(new Uri(Settings.ServerURL), key);
+            
+            foreach (var arg in args.Parameters) {
                 if (arg.key == "r") {
                     var localRepo = LocalRepository.Load(arg.parameter);
                     if (localRepo != null)
                         repo = localRepo;
                 }
             }
+            
             return repo;
         }
 
         static (string, PackageVersion) ParseCompositeName(string package)
         {
-            var parts = new int[] { 0, 0, 0, 0 };
             var name = "";
+            PackageVersion ver;
             try {
                 var nameSplit = package.Split('~');
                 //read version
                 name = nameSplit[0];
-                nameSplit[1].Split('.').ForEach((part, i) =>
-                {
-                    parts[i] = int.Parse(part);
-                });
+                if (nameSplit.Length == 2)
+                    ver = PackageVersion.Parse(nameSplit[1]);
+                else
+                    ver = null;
             }
             catch (Exception ex) {
                 return (name, null);
             }
-            var version = new PackageVersion(parts[0], parts[1], parts[2], parts[3]);
-            return (name, version);
+            
+            return (name, ver);
         }
 
         static void Main(string[] args)
@@ -294,7 +306,7 @@ namespace Altero
 
                 switch (command) {
                     case "create": {
-                            if (arguments.Count(arg => arg.key == "0") < 1)
+                            if (arguments.Items.Count == 0)
                                 WriteLocal("mis_name");
                             else {
                                 var path = "";
@@ -302,19 +314,24 @@ namespace Altero
                                 if (pathArg != null)
                                     path = pathArg.parameter;
 
-                                foreach (var arg in arguments) {
-                                    if (arg.key.All(c => Char.IsDigit(c))) {
+                                foreach (var arg in arguments.Items) {
                                         var (name, version) = ParseCompositeName(arg.parameter);
 
                                         Create(path, name, version);
-                                    }
                                 }
 
                             }
                             break;
                         }
                     case "make": {
-                            var repo = LoadRepo(arguments);
+                            var key = arguments.Parameters.FirstOrDefault(p => p.key == "key");
+                            Guid accessKey = Guid.Empty;
+                            if (key != null)
+                                if(Guid.TryParse(key.parameter, out var k)) {
+                                    accessKey = k;
+                                }
+
+                            var repo = LoadRepo(arguments, accessKey);
 
                             var pathArg = arguments.Pathes.FirstOrDefault();
                             var executableFile = arguments.Items.FirstOrDefault();
@@ -324,8 +341,10 @@ namespace Altero
                                 try {
                                     var pathOfPackage = pathArg.parameter;
                                     var metaFile = File.ReadAllText(pathOfPackage + "\\metadata.json");
+                                    var instMetaFile = File.ReadAllText(pathOfPackage + "\\installation.json");
                                     var packageMeta = JsonConvert.DeserializeObject<PackageMeta>(metaFile);
-                                    packageMeta.files.Clear();
+                                    var instMeta = JsonConvert.DeserializeObject<InstallationInfo>(instMetaFile);
+                                    instMeta.files = new List<FileMeta>();
 
                                     if (executableFile != default(Argument)) {
                                         //TODO add logging support
@@ -340,7 +359,7 @@ namespace Altero
                                                 if (relativePath == ".")
                                                     relativePath = "";
 
-                                                packageMeta.files.Add(new FileMeta
+                                                instMeta.files.Add(new FileMeta
                                                 {
                                                     type = "folder",
                                                     name = lookingDir.Name,
@@ -348,7 +367,7 @@ namespace Altero
                                                 });
 
                                                 foreach (var file in lookingDir.GetFiles()) {
-                                                    packageMeta.files.Add(new FileMeta()
+                                                    instMeta.files.Add(new FileMeta()
                                                     {
                                                         rootLocation = "root\\" + relativePath,
                                                         name = file.Name,
@@ -369,7 +388,7 @@ namespace Altero
                                             foreach (var lib in new DirectoryInfo(pathOfPackage + "\\libs").GetFiles()) {
                                                 if (lib.Extension.ToLower() == ".dll") {
                                                     foreach (var dest in Settings.Locations.libs) {
-                                                        packageMeta.files.Add(new FileMeta
+                                                        instMeta.files.Add(new FileMeta
                                                         {
                                                             rootLocation = "libs\\",
                                                             destinationLocation = dest,
@@ -382,7 +401,8 @@ namespace Altero
                                         }
                                     }
                                     WriteLocalLine("assembling");
-                                    pkg = AssemblyPackage(packageMeta, pathArg.parameter);
+                                    pkg = AssemblyPackage(packageMeta, instMeta, pathArg.parameter);
+                                    
                                     File.WriteAllText(pathArg.parameter + "\\metadata.json", File.ReadAllText(Settings.Path + "\\tempMeta.json"));
                                 }
                                 catch (FileNotFoundException ex) {
@@ -393,9 +413,9 @@ namespace Altero
                                 }
 
                                 if (pkg != default(PackageInfo)) {
+                                    
                                     repo.Send(pkg);
                                 }
-
                             }
                             else {
                                 WriteLocal("dir_not_spec");
@@ -415,13 +435,14 @@ namespace Altero
                             break;
                         }
                     case "install": {
-                            var repo = LoadRepo(arguments);
+                            var repo = LoadRepo(arguments, Guid.Empty);
 
                             var installedCount = 0;
 
-                            foreach (var arg in arguments) {
-                                if (arg.key.All(c => Char.IsDigit(c))) {
-                                    var (name, ver) = ParseCompositeName(arg.parameter);
+                            foreach (var package in arguments.Items) {
+                                
+                                    var (name, ver) = ParseCompositeName(package.parameter.Replace("/",""));
+                                Console.WriteLine(ver);
                                     var pkg = repo.Get(name, ver);
                                     if (pkg != null) {
                                         WriteLocalLine("installing", pkg.meta.name);
@@ -436,7 +457,6 @@ namespace Altero
                                         WriteLocalLine($"pkg_not_found", name);
                                     }
                                 }
-                            }
 
                             break;
                         }
@@ -453,7 +473,7 @@ namespace Altero
                             break;
                         }
                     case "delete": {
-                            var repo = LoadRepo(arguments);
+                            var repo = LoadRepo(arguments, Guid.Empty);
                             foreach (var program in arguments.Items) {
                                 var (name, ver) = ParseCompositeName(program.parameter);
                                     repo.Delete(name, ver);
@@ -475,7 +495,7 @@ namespace Altero
                                     searchingList = Settings.Installed.Where(pkg => Regex.IsMatch(pkg.name, pattern)).ToList();
                                 }
                                 else if(pos.parameter.Trim() == "repo") {
-                                    var repo = LoadRepo(arguments);
+                                    var repo = LoadRepo(arguments, Guid.Empty);
                                     searchingList = repo.Search(pattern);
                                 }
                                 else {
@@ -497,6 +517,13 @@ namespace Altero
                             WriteLocal("help_extended");
                             break;
                         }
+                    case "href": {
+                            var names = arguments.Pathes[0].parameter.Substring(9);
+                            var newArgs = new List<string>();
+                            newArgs.Add("install");
+                            names.Split(' ').ForEach(a => newArgs.Add(a));
+                            Main(newArgs.ToArray());
+                        }break;
                 }
                 Settings.Save();
             }

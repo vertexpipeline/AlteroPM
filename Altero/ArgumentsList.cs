@@ -52,7 +52,7 @@ namespace Altero
                 var trimmedArg = arg.Trim();
                 var match = Regex.Match(trimmedArg, "-(.+)=(.+)");
                 if (match.Success) {
-                    arguments.Add(new Argument { key = match.Groups[0].Value, parameter = match.Groups[1].Value, IsParameter = true });
+                    arguments.Add(new Argument { key = match.Groups[1].Value, parameter = match.Groups[2].Value, IsParameter = true });
                 }
                 else {
                     if (trimmedArg.StartsWith("-")) {

@@ -7,11 +7,11 @@ namespace AlteroShared.Packaging
     public class PackageMeta:IEquatable<PackageMeta>, IComparable<PackageMeta>
     {
         public string name;
+        public string visibleName;
         public PackageVersion version = new PackageVersion();
         public string type="app"; // lib/app/driver
-        public List<RegistryInfo> registry = new List<RegistryInfo>();
-        public List<FileMeta> files = new List<FileMeta>();
-        public List<LauncherInfo> launchers = new List<LauncherInfo>();
+        public string logoURL = "";
+        public string description = "";
         public List<DependencyInfo> dependencies = new List<DependencyInfo>();
 
         public int CompareTo(PackageMeta other)

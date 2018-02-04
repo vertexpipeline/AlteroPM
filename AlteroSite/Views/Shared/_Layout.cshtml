@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AlteroSite</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/site.min.css" />
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light  bg-light sticky-top">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Altero</a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse" id="navbarMain">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li>
+                    <div class="btn-group input-group" role="group" aria-label="Basic example">
+
+                        <input id="search" class="form-control input-group-prepend" style="width:300px" type="search" placeholder="e.g. ccleaner..." value="@ViewData["searchPattern"]" aria-label="Search" />
+                        <button class="btn btn-outline-info my-2 my-sm-0" onclick="location.replace('/?s=' + document.getElementById('search').value);" type="button">Search</button>
+                    </div>
+                </li>
+            </ul>
+
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#getModal">
+                    Get Altero
+                </button>
+                <button class="btn btn-outline-success">Publish</button>
+            </div>
+
+            @*@await Html.PartialAsync("_LoginPartial")*@
+        </div>
+    </nav>
+    <div class="modal fade" id="getModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Get Altero for Windows</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body align-content-center">
+                    <span class="text-justify font-weight-light">Do you realy want to download latest version of Altero(~250MB)?</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-success">Download</button>
+                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer class="text-center">
+            <p>&copy; 2018 - AlteroSite</p>
+        </footer>
+
+        <script src="~/lib/jQuery/dist/jquery.js"></script>
+        <script src="~/lib/popper.js/dist/popper.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+
+        @RenderSection("Scripts", required: false)
+</body>
+</html>
