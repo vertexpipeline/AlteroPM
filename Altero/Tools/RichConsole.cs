@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Altero.Tools
 {
-    class RichConsole
+    public class RichConsole
     {
         static Dictionary<string, string> _i10n;
 
@@ -111,7 +111,7 @@ namespace Altero.Tools
                 _i10n = temp;
             }
             catch (Exception ex) {
-                throw new Exception("Cannot load localization");
+                throw new Exception($"Cannot load localization", ex);
             }
         }
     }

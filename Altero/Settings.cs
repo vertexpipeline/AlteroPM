@@ -24,6 +24,8 @@ namespace Altero
 
         public static List<PackageMeta> Installed => _file.installed;
 
+        public static string ServerURL => _file.serverURL;
+
         static Settings()
         {
             var settingsFile = File.ReadAllText(_path + "\\settings.json");

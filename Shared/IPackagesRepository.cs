@@ -4,10 +4,10 @@ using System.Text;
 
 namespace AlteroShared
 {
-    interface IPackagesRepository
+    public interface IPackagesRepository
     {
         PackageInfo Get(string name, PackageVersion version);
-        void Send(PackageInfo pkg);
+        bool Send(PackageInfo pkg);
         void Delete(string name, PackageVersion version);
         List<Packaging.PackageMeta> Search(string pattern);
     }

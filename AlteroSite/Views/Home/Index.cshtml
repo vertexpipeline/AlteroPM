@@ -1,0 +1,59 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@using AlteroShared.Packaging;
+
+<span>@ViewData["count"]</span>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col col-md-12">
+            <div class="row justify-content-center">
+                @{ 
+                    var pkgs = (ViewData["packages"] as IEnumerable<PackageMeta>);
+                    if (pkgs.Count() != 0) {
+                        foreach (var pkg in pkgs) {
+                        <div class="card" style="width: 18rem; margin:10px">
+                            <div class="card-body">
+                                <h5 class="card-title"><img style="height:50px;width:50px;margin-right:20px" src="@(pkg.logoURL == "" ? "images/pkglogo.png" : pkg.logoURL) " />@pkg.visibleName</h5>
+                                <p class="card-text">@(pkg.description.Length < 150 ? pkg.description : pkg.description.Substring(0, 150) + "...")</p>
+                                <a href="altero://@pkg.name" class="btn btn-outline-primary">Install</a>
+                                <a href="#" class="btn btn-light" data-toggle="modal" data-target="#@(pkg.name)modal">More info</a>
+                                <div class="modal fade" id="@(pkg.name)modal" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">@pkg.name</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                @pkg.description
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">Last version: @pkg.version.ToString()</div>
+                        </div>
+                        }
+                    }
+                    else {
+                        <h4 class="display-4" style="margin:40px">Sorry, there are no packages :(</h4>
+                        }
+                    }
+            </div>
+        </div>
+
+        @*<ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>*@
+    </div>
+</div>
